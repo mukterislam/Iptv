@@ -21,15 +21,7 @@ class PlaylistRepository(
 
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Linux; Android 14; Mobile) IPTVPlayer/1.0"
-
-        val PRESET_PLAYLISTS = listOf(
-            "FAST-IPTV (Default)" to "https://raw.githubusercontent.com/ahan443/FAST-IPTV/refs/heads/main/z.m3u",
-            "IPTV-Org Global" to "https://iptv-org.github.io/iptv/index.m3u",
-            "IPTV-Org News" to "https://iptv-org.github.io/iptv/categories/news.m3u",
-            "IPTV-Org Movies" to "https://iptv-org.github.io/iptv/categories/movies.m3u",
-            "IPTV-Org Sports" to "https://iptv-org.github.io/iptv/categories/sports.m3u",
-            "IPTV-Org Music" to "https://iptv-org.github.io/iptv/categories/music.m3u"
-        )
+        const val DEFAULT_PLAYLIST_URL = FavoritesRepository.DEFAULT_PLAYLIST_URL
     }
 
     suspend fun fetchPlaylist(url: String): Result<List<Channel>> = withContext(Dispatchers.IO) {

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.model.Channel
 import com.example.data.repository.FavoritesRepository
 import com.example.data.repository.PlaylistRepository
+import com.example.data.repository.SavedPlaylist
 import com.example.player.IPTVPlayerManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +17,7 @@ import kotlinx.coroutines.launch
 data class IPTVUiState(
     val isLoading: Boolean = false,
     val currentPlaylistUrl: String = "",
+    val savedPlaylists: List<SavedPlaylist> = emptyList(),
     val allChannels: List<Channel> = emptyList(),
     val filteredChannels: List<Channel> = emptyList(),
     val categories: List<String> = listOf("All", "⭐ Favorites"),
@@ -45,6 +47,8 @@ class IPTVViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: StateFlow<IPTVUiState> = _uiState.asStateFlow()
 
     init {
+        refreshSavedPlaylists()
+
         // Collect player manager states
         viewModelScope.launch {
             playerManager.playerState.collect { pState ->
@@ -60,6 +64,25 @@ class IPTVViewModel(application: Application) : AndroidViewModel(application) {
 
         // Automatically load initial playlist
         loadPlaylist(favoritesRepository.getLastPlaylistUrl())
+    }
+
+    fun refreshSavedPlaylists() {
+        val saved = favoritesRepository.getSavedPlaylists()
+        _uiState.update { it.copy(savedPlaylists = saved) }
+    }
+
+    fun saveAndLoadPlaylist(name: String, url: String) {
+        val trimmed = url.trim()
+        if (trimmed.isNotBlank()) {
+            favoritesRepository.savePlaylist(name, trimmed)
+            refreshSavedPlaylists()
+            loadPlaylist(trimmed)
+        }
+    }
+
+    fun deleteSavedPlaylist(url: String) {
+        favoritesRepository.deletePlaylist(url)
+        refreshSavedPlaylists()
     }
 
     fun loadPlaylist(url: String) {
@@ -101,6 +124,9 @@ class IPTVViewModel(application: Application) : AndroidViewModel(application) {
         val counts = computeCategoryCounts(channels)
         val categories = computeCategories(channels)
 
+        favoritesRepository.savePlaylist("", url)
+        refreshSavedPlaylists()
+
         _uiState.update { current ->
             current.copy(
                 isLoading = false,
@@ -111,11 +137,6 @@ class IPTVViewModel(application: Application) : AndroidViewModel(application) {
             )
         }
         applyFilter()
-
-        // If no channel is currently playing, start playing the first available channel
-        if (_uiState.value.currentChannel == null && channels.isNotEmpty()) {
-            playChannel(channels.first())
-        }
     }
 
     private fun computeCategories(channels: List<Channel>): List<String> {

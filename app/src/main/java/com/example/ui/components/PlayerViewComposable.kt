@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
+import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
@@ -175,8 +176,54 @@ fun VideoPlayerComposable(
             modifier = Modifier.fillMaxSize()
         )
 
+        // Placeholder when no channel has been selected yet
+        if (channel == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                            .background(GeometricSurface)
+                            .border(BorderStroke(1.dp, GeometricOutline), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.LiveTv,
+                            contentDescription = null,
+                            tint = GeometricPrimary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(
+                        text = "কোনো চ্যানেল সিলেক্ট করা হয়নি",
+                        color = GeometricTextPrimary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "লাইভ দেখতে নিচে তালিকা থেকে যেকোনো চ্যানেল নির্বাচন করুন",
+                        color = GeometricTextSecondary,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
         // Buffering Indicator
-        if (isBuffering && errorMessage == null) {
+        if (channel != null && isBuffering && errorMessage == null) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -277,7 +324,7 @@ fun VideoPlayerComposable(
 
         // Animated Overlays (Top and Bottom Controls)
         AnimatedVisibility(
-            visible = areControlsVisible && errorMessage == null,
+            visible = areControlsVisible && channel != null && errorMessage == null,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.fillMaxSize()

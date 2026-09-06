@@ -40,12 +40,11 @@ import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LiveTv
-import androidx.compose.material.icons.filled.PlaylistPlay
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -62,7 +61,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,6 +80,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.components.CategoryTabs
 import com.example.ui.components.ChannelGridCard
 import com.example.ui.components.ChannelListRow
+import com.example.ui.components.ExitConfirmationDialog
 import com.example.ui.components.PlaylistDialog
 import com.example.ui.components.VideoPlayerComposable
 import com.example.ui.theme.GeometricBackground
@@ -98,26 +101,60 @@ import com.example.ui.viewmodel.IPTVViewModel
 fun HomeScreen(
     viewModel: IPTVViewModel,
     uiState: IPTVUiState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onExitApp: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    var showExitDialog by remember { mutableStateOf(false) }
 
-    // Intercept back button when in fullscreen or searching
-    BackHandler(enabled = uiState.isFullscreen || uiState.isSearchActive) {
-        if (uiState.isFullscreen) {
-            viewModel.setFullscreen(false)
-        } else if (uiState.isSearchActive) {
-            viewModel.setSearchActive(false)
+    // Intercept back button:
+    // 1. Fullscreen -> Exit fullscreen
+    // 2. Search active -> Clear/Close search
+    // 3. Home / Default -> Show exit confirmation dialog
+    BackHandler(enabled = true) {
+        when {
+            uiState.isFullscreen -> {
+                viewModel.setFullscreen(false)
+            }
+            uiState.isSearchActive -> {
+                viewModel.setSearchActive(false)
+            }
+            uiState.showPlaylistDialog -> {
+                viewModel.setShowPlaylistDialog(false)
+            }
+            else -> {
+                showExitDialog = true
+            }
         }
+    }
+
+    if (showExitDialog) {
+        ExitConfirmationDialog(
+            onConfirmExit = {
+                showExitDialog = false
+                onExitApp()
+            },
+            onDismiss = {
+                showExitDialog = false
+            }
+        )
     }
 
     if (uiState.showPlaylistDialog) {
         PlaylistDialog(
             currentUrl = uiState.currentPlaylistUrl,
+            savedPlaylists = uiState.savedPlaylists,
             onDismiss = { viewModel.setShowPlaylistDialog(false) },
             onSelectPlaylist = { newUrl ->
                 viewModel.setShowPlaylistDialog(false)
                 viewModel.loadPlaylist(newUrl)
+            },
+            onSaveAndLoad = { name, newUrl ->
+                viewModel.setShowPlaylistDialog(false)
+                viewModel.saveAndLoadPlaylist(name, newUrl)
+            },
+            onDeletePlaylist = { urlToDelete ->
+                viewModel.deleteSavedPlaylist(urlToDelete)
             }
         )
     }
@@ -237,7 +274,7 @@ fun HomeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = if (uiState.isLayoutGrid) Icons.Filled.ViewList else Icons.Filled.GridView,
+                            imageVector = if (uiState.isLayoutGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.GridView,
                             contentDescription = "Toggle View",
                             tint = GeometricTextPrimary,
                             modifier = Modifier.size(18.dp)
@@ -258,7 +295,7 @@ fun HomeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.PlaylistPlay,
+                            imageVector = Icons.AutoMirrored.Filled.PlaylistPlay,
                             contentDescription = "Playlists",
                             tint = GeometricTextPrimary,
                             modifier = Modifier.size(20.dp)
@@ -270,13 +307,14 @@ fun HomeScreen(
                     // Geometric Avatar Pill
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(GeometricPrimary),
+                            .height(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(GeometricPrimary)
+                            .padding(horizontal = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "IP",
+                            text = "MKR",
                             color = GeometricOnPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp

@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "IPTV Player"
+rootProject.name = "MKR TV"
 
 include(":app")

@@ -30,7 +30,11 @@ class MainActivity : ComponentActivity() {
           color = DarkBackground
         ) {
           val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-          HomeScreen(viewModel = viewModel, uiState = uiState)
+          HomeScreen(
+            viewModel = viewModel,
+            uiState = uiState,
+            onExitApp = { finish() }
+          )
         }
       }
     }

@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">IPTV Player</string>
+    <string name="app_name">MKR TV</string>
+    <string name="exit_dialog_title">অ্যাপ থেকে প্রস্থান</string>
+    <string name="exit_dialog_message">আপনি কি MKR TV অ্যাপ থেকে বের হতে চাচ্ছেন?</string>
+    <string name="exit_dialog_confirm">হ্যাঁ, বের হব</string>
+    <string name="exit_dialog_cancel">না</string>
 </resources>

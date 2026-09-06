@@ -1,21 +1,29 @@
 # Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep data models
+-keep class com.example.data.model.** { *; }
+-keep class com.example.data.repository.SavedPlaylist { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Media3 / ExoPlayer rules
+-keep class androidx.media3.exoplayer.** { *; }
+-keep class androidx.media3.exoplayer.hls.** { *; }
+-keep class androidx.media3.ui.** { *; }
+-keep class androidx.media3.common.** { *; }
+-dontwarn androidx.media3.**
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# OkHttp & Okio rules
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-keepattributes Signature
+-keepattributes *Annotation*
+
+# Kotlin Coroutines
+-dontwarn kotlinx.coroutines.**
+
+# Coil
+-keep class coil.** { *; }
+-dontwarn coil.**
+
+# Room
+-keep class androidx.room.** { *; }
+-dontwarn androidx.room.**
